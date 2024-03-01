@@ -13,6 +13,5 @@ namespace TheMovieDB.Models
         [DisplayName("Actor Image")]
         public byte[]? ActorImage { get; set; }
 
-        public List<Movie> Movies { get; set; }
     }
 }

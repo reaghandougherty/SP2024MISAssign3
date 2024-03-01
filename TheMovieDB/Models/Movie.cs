@@ -7,7 +7,6 @@
         public string Description { get; set; }
         public string Director { get; set; }
 
-        public List<Actor> Actors { get; set; }
 
     }
 }
