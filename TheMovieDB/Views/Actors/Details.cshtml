@@ -25,11 +25,23 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.actor.Name)
         </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.actor.Gender)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.actor.Gender)
+        </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.actor.Age)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.actor.Age)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.actor.IMDB)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.actor.IMDB)
         </dd>
     </dl>
 </div>
