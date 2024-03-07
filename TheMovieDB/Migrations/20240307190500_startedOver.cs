@@ -16,7 +16,10 @@ namespace TheMovieDB.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Age = table.Column<int>(type: "int", nullable: false)
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Age = table.Column<int>(type: "int", nullable: false),
+                    IMDB = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ActorImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -69,12 +72,36 @@ namespace TheMovieDB.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IMDB = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Genre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    Poster = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Director = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Movie", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ActorPhoneNumber",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ActorID = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ActorPhoneNumber", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ActorPhoneNumber_Actor_ActorID",
+                        column: x => x.ActorID,
+                        principalTable: "Actor",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -218,6 +245,11 @@ namespace TheMovieDB.Migrations
                 column: "MovieID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ActorPhoneNumber_ActorID",
+                table: "ActorPhoneNumber",
+                column: "ActorID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -263,6 +295,9 @@ namespace TheMovieDB.Migrations
                 name: "ActorMovie");
 
             migrationBuilder.DropTable(
+                name: "ActorPhoneNumber");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
@@ -278,10 +313,10 @@ namespace TheMovieDB.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Actor");
+                name: "Movie");
 
             migrationBuilder.DropTable(
-                name: "Movie");
+                name: "Actor");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
