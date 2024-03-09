@@ -44,7 +44,10 @@
             @Html.DisplayNameFor(model => model.movie.Poster)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.movie.Poster)
+            @if (Model.movie.Poster != null && Model.movie.Poster.Length != 0)
+            {
+                <img height="100" src="@Url.Action("GetMoviePoster", "Movie", new {Model.movie.Id})" />
+            }
         </dd>
     </dl>
 </div>

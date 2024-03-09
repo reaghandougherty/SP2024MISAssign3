@@ -12,6 +12,17 @@ namespace TheMovieDB.Controllers
 {
     public class MoviesController : Controller
     {
+        public async Task<IActionResult> GetMoviePoster(int id)
+        {
+            var movie = await _context.Movie.FirstOrDefaultAsync(x => x.Id == id);
+            if(movie == null)
+            {
+                return NotFound();
+            }
+            var posterData = movie.Poster;
+            return File(posterData, "image/jpg");
+        }
+
         private readonly ApplicationDbContext _context;
 
         public MoviesController(ApplicationDbContext context)
@@ -75,10 +86,23 @@ namespace TheMovieDB.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Director")] Movie movie)
+        public async Task<IActionResult> Create([Bind("Id,Title,IMDB,Genre,Year, Description,Poster")] Movie movie, IFormFile Poster)
         {
+            ModelState.Remove(nameof(Movie.Poster));
+
             if (ModelState.IsValid)
             {
+                if(Poster != null && Poster.Length > 0)
+                {
+                    var memoryStream = new MemoryStream();
+                    await Poster.CopyToAsync(memoryStream);
+                    movie.Poster = memoryStream.ToArray();
+                }
+                else
+                {
+                    movie.Poster = new byte[0];
+                }
+
                 _context.Add(movie);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
