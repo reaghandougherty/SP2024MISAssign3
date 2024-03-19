@@ -56,24 +56,57 @@ namespace TheMovieDB.Controllers
                 return NotFound();
             }
 
-            MovieDetailsVM movieDetailsVM = new MovieDetailsVM();
-            movieDetailsVM.movie = movie;
+            MovieDetailsVM mdVM = new MovieDetailsVM();
+            mdVM.movie = movie;
 
-            //added in code from bb
-            /*
-            //Get the text from WikiPedia related to the Pet description
-            List<string> textToExamine = await SearchWikipediaAsync(movie.Description);
+            var actors = new List<Actor>();
+
+            actors = await (from a in _context.Actor join am in _context.ActorMovie on a.Id equals am.ActorID where am.MovieID == id select a).ToListAsync();
+
+            mdVM.actors = actors;
+
+            var queryText = movie.Title;
+            var pageContents = await SearchWikipediaAsync(queryText);
+
+            var sentimentList = new List<string>();
+            var postList = new List<string>();
+            var analyzer = new SentimentIntensityAnalyzer();
+
+            foreach (var pageContent in pageContents)
+            {
+                // Limit the snippet length to 1500 characters
+                var snippet = pageContent.Length > 1500 ? pageContent.Substring(0, 1500) : pageContent;
+
+                // Perform sentiment analysis
+                var results = analyzer.PolarityScores(snippet);
+                double sentimentScore = results.Compound;
+
+                if (sentimentScore != 0)
+                {
+                    sentimentList.Add(sentimentScore.ToString() + ", " + CategorizeSentiment(sentimentScore));
+                    postList.Add(snippet);
+                }
+            }
+
+            mdVM.Sentiments = sentimentList;
+            mdVM.Posts = postList;
+
+            return View(mdVM);
+
+        }
+
+        //added in code from bb
 
         public static readonly HttpClient client = new HttpClient();
-
-        public static async Task<List<string>> SearchWikipediaAsync(string searchQuery)
+        public static async Task<List<string>> SearchWikipediaAsync(string queryText)
         {
+
             string baseUrl = "https://en.wikipedia.org/w/api.php";
-            string url = $"{baseUrl}?action=query&list=search&srlimit=100&srsearch={Uri.EscapeDataString(searchQuery)}&format=json";
+            string url = $"{baseUrl}?action=query&list=search&srlimit=100&srsearch={Uri.EscapeDataString(queryText)}&format=json";
             List<string> textToExamine = new List<string>();
             try
             {
-                //Ask WikiPedia for a list of pages that relate to the query
+                // Ask Wikipedia for a list of pages that relate to the query
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -82,8 +115,8 @@ namespace TheMovieDB.Controllers
                 foreach (var item in searchResults.EnumerateArray())
                 {
                     var pageId = item.GetProperty("pageid").ToString();
-                    //Ask WikiPedia for the text of each page in the query results
-                    string pageUrl = $"{baseUrl}?action=query&pageids={pageId}&prop=extracts&explaintext&format=json";
+                    // Ask Wikipedia for the text of each page in the query results
+                    string pageUrl = $"{baseUrl}?action=query&pageids={pageId}&prop=extracts&explaintext=1&format=json";
                     HttpResponseMessage pageResponse = await client.GetAsync(pageUrl);
                     pageResponse.EnsureSuccessStatusCode();
                     string pageResponseBody = await pageResponse.Content.ReadAsStringAsync();
@@ -99,24 +132,29 @@ namespace TheMovieDB.Controllers
             }
             return textToExamine;
         }
-        */
-            //added in code from bb
-           /* var analyzer = new SentimentIntensityAnalyzer();
-            int validResults = 0;
-            double resultsTotal = 0;
 
-            foreach (string textValue in textToExamine)
-            {
-                var results = analyzer.PolarityScores(textValue);
-                if(results.Compound != 0)
-                {
-                    resultsTotal += results.Compound;
-                    validResults++;
-                }
-            }
-            double avgResult = Math.Round(resultsTotal/validResults, 2);
-            movieDetailsVM.Sentiment =avgResult.ToString(); //+ ", "+ CategorizeSentiment(avgResult) */
+        public static string CategorizeSentiment(double sentiment)
+        {
+            if (sentiment >= -1 && sentiment < -0.6)
+                return "Extremely Negative";
+            else if (sentiment >= -0.6 && sentiment < -0.2)
+                return "Very Negative";
+            else if (sentiment >= -0.2 && sentiment < 0)
+                return "Slightly Negative";
+            else if (sentiment >= 0 && sentiment < 0.2)
+                return "Slightly Positive";
+            else if (sentiment >= 0.2 && sentiment < 0.6)
+                return "Very Positive";
+            else if (sentiment >= 0.6 && sentiment < 1)
+                return "Highly Positive";
+            else
+                return "Invalid sentiment value";
+        }
 
+
+        //added in code from bb
+
+        /*
         var actors = new List<Actor>();
             ////Option 1
             actors = await (from actor in _context.Actor
@@ -134,7 +172,7 @@ namespace TheMovieDB.Controllers
             movieDetailsVM.actors = actors;
 
             return View(movieDetailsVM);
-        }
+        }*/
 
         // GET: Movies/Create
         public IActionResult Create()

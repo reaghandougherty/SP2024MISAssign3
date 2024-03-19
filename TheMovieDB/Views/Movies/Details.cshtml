@@ -41,12 +41,6 @@
             @Html.DisplayFor(model => model.movie.Description)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Sentiment)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Sentiment)
-        </dd>
-        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.movie.Poster)
         </dt>
         <dd class="col-sm-10">
@@ -94,6 +88,35 @@
                     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                 </td>
             </tr>
+        }
+    </tbody>
+</table>
+<h1>Wikipedia Post</h1>
+<table id="redditTable" class="table">
+    <thead>
+        <tr>
+            <th>
+                Sentiment
+            </th>
+            <th>
+                Post
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < Model.Sentiments.Count && i < Model.Posts.Count; i++)
+        {
+            if (Model.Sentiments[i] != "0")
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => model.Sentiments[i])
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => model.Posts[i])
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>
