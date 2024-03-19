@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TheMovieDB.Data;
 using TheMovieDB.Models;
+using VaderSharp2;
 
 namespace TheMovieDB.Controllers
 {
@@ -56,7 +59,65 @@ namespace TheMovieDB.Controllers
             MovieDetailsVM movieDetailsVM = new MovieDetailsVM();
             movieDetailsVM.movie = movie;
 
-            var actors = new List<Actor>();
+            //added in code from bb
+            /*
+            //Get the text from WikiPedia related to the Pet description
+            List<string> textToExamine = await SearchWikipediaAsync(movie.Description);
+
+        public static readonly HttpClient client = new HttpClient();
+
+        public static async Task<List<string>> SearchWikipediaAsync(string searchQuery)
+        {
+            string baseUrl = "https://en.wikipedia.org/w/api.php";
+            string url = $"{baseUrl}?action=query&list=search&srlimit=100&srsearch={Uri.EscapeDataString(searchQuery)}&format=json";
+            List<string> textToExamine = new List<string>();
+            try
+            {
+                //Ask WikiPedia for a list of pages that relate to the query
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var jsonDocument = JsonDocument.Parse(responseBody);
+                var searchResults = jsonDocument.RootElement.GetProperty("query").GetProperty("search");
+                foreach (var item in searchResults.EnumerateArray())
+                {
+                    var pageId = item.GetProperty("pageid").ToString();
+                    //Ask WikiPedia for the text of each page in the query results
+                    string pageUrl = $"{baseUrl}?action=query&pageids={pageId}&prop=extracts&explaintext&format=json";
+                    HttpResponseMessage pageResponse = await client.GetAsync(pageUrl);
+                    pageResponse.EnsureSuccessStatusCode();
+                    string pageResponseBody = await pageResponse.Content.ReadAsStringAsync();
+                    var jsonPageDocument = JsonDocument.Parse(pageResponseBody);
+                    var pageContent = jsonPageDocument.RootElement.GetProperty("query").GetProperty("pages").GetProperty(pageId).GetProperty("extract").GetString();
+                    textToExamine.Add(pageContent);
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine("\nException Caught!");
+                Console.WriteLine("Message :{0} ", e.Message);
+            }
+            return textToExamine;
+        }
+        */
+            //added in code from bb
+           /* var analyzer = new SentimentIntensityAnalyzer();
+            int validResults = 0;
+            double resultsTotal = 0;
+
+            foreach (string textValue in textToExamine)
+            {
+                var results = analyzer.PolarityScores(textValue);
+                if(results.Compound != 0)
+                {
+                    resultsTotal += results.Compound;
+                    validResults++;
+                }
+            }
+            double avgResult = Math.Round(resultsTotal/validResults, 2);
+            movieDetailsVM.Sentiment =avgResult.ToString(); //+ ", "+ CategorizeSentiment(avgResult) */
+
+        var actors = new List<Actor>();
             ////Option 1
             actors = await (from actor in _context.Actor
                             join am in _context.ActorMovie on actor.Id equals am.ActorID
