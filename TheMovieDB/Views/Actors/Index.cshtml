@@ -37,8 +37,14 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
+                 @Html.DisplayFor(modelItem => item.Gender)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.Age)
             </td>
+            <td>
+                    <a href="@Html.DisplayFor(modelItem => item.IMDB)" target="_blank">IMDB Link</a>
+             </td>
                 <td>
                     @if (item.ActorImage != null && item.ActorImage.Length!=0)
                     {
