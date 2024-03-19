@@ -86,7 +86,7 @@ namespace TheMovieDB.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,IMDB,Genre,Year, Description,Poster")] Movie movie, IFormFile Poster)
+        public async Task<IActionResult> Create([Bind("Id,Title,IMDB,Genre,Year,Description,Poster")] Movie movie, IFormFile Poster)
         {
             ModelState.Remove(nameof(Movie.Poster));
 
@@ -131,7 +131,7 @@ namespace TheMovieDB.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Director")] Movie movie)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,IMDB,Genre,Year,Description,Poster")] Movie movie)
         {
             if (id != movie.Id)
             {

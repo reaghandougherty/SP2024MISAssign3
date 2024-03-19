@@ -14,7 +14,6 @@ namespace TheMovieDB.Controllers
 {
     public class ActorsController : Controller
     {
-        private readonly ApplicationDbContext _context;
 
         public async Task<IActionResult> GetActorPhoto(int id)
         {
@@ -29,6 +28,7 @@ namespace TheMovieDB.Controllers
             return File(imageData, "image/jpg");
         }
 
+        private readonly ApplicationDbContext _context;
         public ActorsController(ApplicationDbContext context)
         {
             _context = context;
@@ -79,7 +79,7 @@ namespace TheMovieDB.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Age")] Actor actor, IFormFile ActorImage)
+        public async Task<IActionResult> Create([Bind("Id,Name,Gender,Age,IMDB,ActorImage")] Actor actor, IFormFile ActorImage)
         {
             ModelState.Remove(nameof(actor.ActorImage));
 
@@ -130,7 +130,7 @@ namespace TheMovieDB.Controllers
         [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Age")] Actor actor, IFormFile ActorImage)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Gender,Age,IMDB,ActorImage")] Actor actor, IFormFile ActorImage)
         {
             if (id != actor.Id)
             {
