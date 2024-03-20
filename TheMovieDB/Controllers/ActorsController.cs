@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using TheMovieDB.Data;
 using TheMovieDB.Models;
+using VaderSharp2;
 
 namespace TheMovieDB.Controllers
 {
@@ -59,13 +61,97 @@ namespace TheMovieDB.Controllers
             ActorDetailsVM ad = new ActorDetailsVM();   
             ad.actor = actor;
 
-            var actorPhoneNumbers = from ap in _context.ActorPhoneNumber
-                                    where ap.ActorID == id
-                                    select ap;
+            /*
+            var actors = new List<Actor>();
 
-            ad.phoneNumbers = actorPhoneNumbers.AsEnumerable().Cast<ActorPhoneNumber>().ToList();
+            actors = await (from a in _context.Actor join am in _context.ActorMovie on a.Id equals am.ActorID where am.MovieID == id select a).ToListAsync();
+
+            ad.actors = actors; */
+
+            var queryText = actor.Name;
+            var pageContents = await SearchWikipediaAsync(queryText);
+
+            var sentimentList = new List<string>();
+            var postList = new List<string>();
+            var analyzer = new SentimentIntensityAnalyzer();
+
+            foreach (var pageContent in pageContents)
+            {
+                // Limit the snippet length to 1500 characters
+                var snippet = pageContent.Length > 1500 ? pageContent.Substring(0, 1500) : pageContent;
+
+                // Perform sentiment analysis
+                var results = analyzer.PolarityScores(snippet);
+                double sentimentScore = results.Compound;
+
+                if (sentimentScore != 0)
+                {
+                    sentimentList.Add(sentimentScore.ToString() + ", " + CategorizeSentiment(sentimentScore));
+                    postList.Add(snippet);
+                }
+            }
+
+            ad.Sentiments = sentimentList;
+            ad.Posts = postList;
 
             return View(ad);
+
+        }
+
+        //added in code from bb
+
+        public static readonly HttpClient client = new HttpClient();
+        public static async Task<List<string>> SearchWikipediaAsync(string queryText)
+        {
+
+            string baseUrl = "https://en.wikipedia.org/w/api.php";
+            string url = $"{baseUrl}?action=query&list=search&srlimit=100&srsearch={Uri.EscapeDataString(queryText)}&format=json";
+            List<string> textToExamine = new List<string>();
+            try
+            {
+                // Ask Wikipedia for a list of pages that relate to the query
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var jsonDocument = JsonDocument.Parse(responseBody);
+                var searchResults = jsonDocument.RootElement.GetProperty("query").GetProperty("search");
+                foreach (var item in searchResults.EnumerateArray())
+                {
+                    var pageId = item.GetProperty("pageid").ToString();
+                    // Ask Wikipedia for the text of each page in the query results
+                    string pageUrl = $"{baseUrl}?action=query&pageids={pageId}&prop=extracts&explaintext=1&format=json";
+                    HttpResponseMessage pageResponse = await client.GetAsync(pageUrl);
+                    pageResponse.EnsureSuccessStatusCode();
+                    string pageResponseBody = await pageResponse.Content.ReadAsStringAsync();
+                    var jsonPageDocument = JsonDocument.Parse(pageResponseBody);
+                    var pageContent = jsonPageDocument.RootElement.GetProperty("query").GetProperty("pages").GetProperty(pageId).GetProperty("extract").GetString();
+                    textToExamine.Add(pageContent);
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine("\nException Caught!");
+                Console.WriteLine("Message :{0} ", e.Message);
+            }
+            return textToExamine;
+        }
+
+        public static string CategorizeSentiment(double sentiment)
+        {
+            if (sentiment >= -1 && sentiment < -0.6)
+                return "Extremely Negative";
+            else if (sentiment >= -0.6 && sentiment < -0.2)
+                return "Very Negative";
+            else if (sentiment >= -0.2 && sentiment < 0)
+                return "Slightly Negative";
+            else if (sentiment >= 0 && sentiment < 0.2)
+                return "Slightly Positive";
+            else if (sentiment >= 0.2 && sentiment < 0.6)
+                return "Very Positive";
+            else if (sentiment >= 0.6 && sentiment < 1)
+                return "Highly Positive";
+            else
+                return "Invalid sentiment value";
         }
 
         // GET: Actors/Create

@@ -54,30 +54,32 @@
     }
     <a asp-action="Index">Back to List</a>
 </div>
-<h1>Phone Numbers</h1>
-<br />
-<table class="table">
+<h1>Wikipedia Post</h1>
+<table id="redditTable" class="table">
     <thead>
         <tr>
             <th>
-               Phone Number
+                Sentiment
             </th>
             <th>
-                Description
+                Post
             </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.phoneNumbers)
+        @for (var i = 0; i < Model.Sentiments.Count && i < Model.Posts.Count; i++)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.PhoneNumber)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-            </tr>
+            if (Model.Sentiments[i] != "0")
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => model.Sentiments[i])
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => model.Posts[i])
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>
