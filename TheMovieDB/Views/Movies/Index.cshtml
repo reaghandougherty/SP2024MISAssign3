@@ -54,7 +54,7 @@
                 <td>
                     @if (item.Poster != null && item.Poster.Length != 0)
                     {
-                        <img height="100" src="@Url.Action("GetMoviePoster", "Movie", new {item.Id})" />
+                        <img height="100" src="@Url.Action("GetMoviePoster", "Movies", new {item.Id})" />
                     }
                 </td>
             <td>
